@@ -48,8 +48,6 @@ public class Task2 {
 				return false;
 			}
 
-			System.out.println("col " + colToCut + " CAN be cut");
-
 			if (startCol <= x1[i] && x2[i] <= colToCut) { // check if any topping on left slice
 				leftHasTopping = true;
 				System.out.println("left has topping at [" + x1[i] + ", " + x2[i] + ")");
@@ -60,10 +58,8 @@ public class Task2 {
 				System.out.println("right has topping at [" + x1[i] + ", " + x2[i] + ")");
 			}
 
-			hasTopping = leftHasTopping && rightHasTopping;
-			if (hasTopping) {
-				break;
-			}
+			hasTopping = leftHasTopping && rightHasTopping; // they may not both be true at the same iteration of toppings
+			// even if this is true, cut can be invalid if cut thru toppings in future loops
 		}
 
 		return hasTopping;
