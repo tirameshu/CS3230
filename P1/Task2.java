@@ -12,88 +12,113 @@ import java.util.Scanner;
  */
 
 public class Task2 {
+	public static int nToppings, originalCols, originalRows;
+	public static int[] x1, x2, y1, y2;
 
-	// O(n)
-	boolean verticalCut(int[][] matrix, int cols, int rows, int colToCut) {
-		for (int row = 0; row < rows; row++) {
-			int leftCell = matrix[row][colToCut-1]; // since colToCut starts from 1
-			int rightCell = matrix[row][colToCut];
-			if (leftCell == rightCell) {
-				return false; // cutting through topping: invalid
-			}
-		}
-		return true;
+	public Task2(int nToppings, int[] x1, int[] y1, int[] x2, int[] y2, int cols, int rows) {
+		this.nToppings = nToppings;
+		this.x1 = x1;
+		this.y1 = y1;
+		this.x2 = x2;
+		this.y2 = y2;
+		this.originalCols = cols;
+		this.originalRows = rows;
 	}
 
-	int recursiveSolve(int[][] matrix, int cols, int rows, int colCut) {
-		// check if any resultant piece is empty
+	int recurseHorizontal(int startRow, int startCol, int endRow, int endCol) {
+		return 0;
+	}
 
+	/**
+	 * Check valid cut by checking if col to cut is within any [x1, x2)
+	 * 	so that this is actly O(nToppings).
+	 * As this will be used recursively, boundary rows and columns will change.
+	 * Also check validity by ensuring each piece has topping.
+	 */
+	boolean verticalCut(int colToCut, int startRow, int startCol, int endRow, int endCol) {
+		boolean hasTopping = false;
+		boolean leftHasTopping = false;
+		boolean rightHasTopping = false;
 
-		// also only do vertical cut for those to right of col cut;
-		// those to left alr checked.
+		for (int i = 0; i < nToppings; i++) { // O(n)
+			// if colToCut == x1[i], cut is on left border of topping
+			// if colToCut == x2[i], cut is on the right border of topping
+			if (x1[i] < colToCut && colToCut < x2[i]) {
+				System.out.println("col " + colToCut + " cannot be cut");
+				return false;
+			}
 
-		if (verticalCut(matrix, cols, rows, colToCut) == true) { // valid cut
-			return recursiveSolve(matrix, ) + recursiveSolve(right);
+			System.out.println("col " + colToCut + " CAN be cut");
+
+			if (startCol <= x1[i] && x2[i] <= colToCut) { // check if any topping on left slice
+				leftHasTopping = true;
+				System.out.println("left has topping at [" + x1[i] + ", " + x2[i] + ")");
+			}
+
+			if (colToCut <= x1[i] && x2[i] <= endCol) { // check if any topping on right slice
+				rightHasTopping = true;
+				System.out.println("right has topping at [" + x1[i] + ", " + x2[i] + ")");
+			}
+
+			hasTopping = leftHasTopping && rightHasTopping;
+			if (hasTopping) {
+				break;
+			}
 		}
 
-		if (horizontalCut() == true) { // valid cut
-			task2.recursiveSolve(left, right);
+		return hasTopping;
+	}
+
+	int recurseVertical(int startRow, int startCol, int endRow, int endCol) {
+		// col = 1 is the column between (0, 0) and (0, 1)
+		for (int colToCut = startCol+1; colToCut < endCol; colToCut++) {
+
+			// for every part cake, try slicing every col possible incrementally
+			if (verticalCut(colToCut, startRow, startCol, endRow, endCol) == true) {
+
+				// Find max of subcase
+				int left = Math.max(recurseHorizontal(0, 0, originalRows, colToCut), recurseVertical(0, 0, originalRows, colToCut));
+				System.out.println("left: " + left);
+				int right = Math.max(recurseHorizontal(0, colToCut, originalRows, originalCols), recurseVertical(0, colToCut, originalRows, originalCols));
+				System.out.println("right: " + right);
+				int temp = left + right;
+
+				return temp;
+			} else {
+				continue;
+//				System.out.println("cannot cut col " + col);
+			}
 		}
+
+		// when startCol == endCol - 1
 		return 1;
 	}
 
-	static int solve(int nToppings, int[] x1, int[] y1, int[] x2, int[] y2, int cols, int rows) {
-		Task2 task2 = new Task2();
-		int temp = 1; // default 1
-		int maxPieces = 1;
+	static int solve(Task2 task2) {
+		return Math.max(task2.recurseHorizontal(0, 0, originalRows, originalCols), task2.recurseVertical(0, 0, originalRows, originalCols));
 
-		int[][] matrix = new int[rows][cols]; // default cell = 0, no topping
-		int colStart, colEnd, rowStart, rowEnd;
-
-		// populate matrix w toppings
-		for (int topping = 0; topping < nToppings; topping++) {
-			// locate each topping
-			colStart = x1[topping];
-			colEnd = x2[topping];
-			rowStart = y1[topping];
-			rowEnd = y2[topping];
-
-			for (int rowPtr = rowStart; rowPtr < rowEnd; rowPtr++) {
-				for (int colPtr = colStart; colPtr < colEnd; colPtr++) {
-					matrix[rowPtr][colPtr] = topping + 1; // +1 for actual topping number
-				}
-			}
-		}
-
-//		for (int col = 1; col < cols; col++) {
-//			if (task2.verticalCut(matrix, cols, rows, col) == true) {
-//				System.out.println("can cut along col " + col);
+//		// col = 1 is the column between (0, 0) and (0, 1)
+//		for (int col = 1; col < originalCols; col++) {
+//			if (task2.verticalCut(col, 0, 0, originalRows, originalCols) == true) {
+//				// only do vertical cut for those to right of col cut;
+//				// those to left alr checked vertically.
+//				temp = task2.recurseHorizontal(0, 0, originalRows, col) + task2.recurseVertical(0, col, originalRows, originalCols);
+////				System.out.println("can cut col " + col);
 //			} else {
-//				System.out.println("cannot cut along col " + col);
+////				System.out.println("cannot cut col " + col);
 //			}
+//
+//			maxPieces = Math.max(maxPieces, temp);
 //		}
 
-		// 1. Vertical attempt
-		// start cutting from col 1, which is in between
-		// matrix[0][0] and matrix[0][1]
-		for (int col = 1; col < cols; col++) {
-			if (verticalCut(matrix, cols, rows, col) == true) {
-				temp = task2.recursiveSolve(matrix, cols, rows, col);
-			}
-
-			maxPieces = max(maxPieces, temp);
-		}
-
 		// 2. Horizontal attempt
-		for (int row = 1; row < rows; row++) { // start cutting from row 1
-			if (horizontalCut(matrix, cols, rows, rowToCut) == true) {
-				temp = task2.recursiveSolve(matrix);
-			}
-
-			maxPieces = max(maxPieces, temp);
-		}
-
-		return maxPieces;
+//		for (int row = 1; row < rows; row++) { // start cutting from row 1
+//			if (horizontalCut(Task2) == true) {
+//				temp = task2.recursiveSolve(task2);
+//			}
+//
+//			maxPieces = Math.max(maxPieces, temp);
+//		}
 	}
 
 	public static void main(String[] args) {
@@ -113,6 +138,8 @@ public class Task2 {
 			y2[i] = sc.nextInt();
 		}
 
-		System.out.println(solve(nToppings, x1, y1, x2, y2, cols, rows));
+		Task2 task2 = new Task2(nToppings, x1, y1, x2, y2, cols, rows);
+
+		System.out.println(solve(task2));
 	}
 }
