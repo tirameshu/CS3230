@@ -48,18 +48,21 @@ public class Task2 {
 				return false;
 			}
 
-			if (startCol <= x1[i] && x2[i] <= colToCut) { // check if any topping on left slice
-				leftHasTopping = true;
-				System.out.println("left has topping at [" + x1[i] + ", " + x2[i] + ")");
+			if (!hasTopping) {
+				// checking if current topping is on left or right of the cut
+				if (startCol <= x1[i] && x2[i] <= colToCut) { // check if topping is on left slice
+					leftHasTopping = true;
+					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on left");
+				} else if (colToCut <= x1[i] && x2[i] <= endCol) { // check if topping is on right slice
+					rightHasTopping = true;
+					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on right");
+				}
+
+				// However, even if this is true, cut can be invalid if cut thru toppings in future loops,
+				// so don't return/ break here.
+				hasTopping = leftHasTopping && rightHasTopping;
 			}
 
-			if (colToCut <= x1[i] && x2[i] <= endCol) { // check if any topping on right slice
-				rightHasTopping = true;
-				System.out.println("right has topping at [" + x1[i] + ", " + x2[i] + ")");
-			}
-
-			hasTopping = leftHasTopping && rightHasTopping; // they may not both be true at the same iteration of toppings
-			// even if this is true, cut can be invalid if cut thru toppings in future loops
 		}
 
 		return hasTopping;
@@ -73,9 +76,9 @@ public class Task2 {
 			if (verticalCut(colToCut, startRow, startCol, endRow, endCol) == true) {
 
 				// Find max of subcase
-				int left = Math.max(recurseHorizontal(0, 0, originalRows, colToCut), recurseVertical(0, 0, originalRows, colToCut));
+				int left = Math.max(recurseHorizontal(startRow, startCol, originalRows, colToCut), recurseVertical(startRow, startCol, originalRows, colToCut));
 				System.out.println("left: " + left);
-				int right = Math.max(recurseHorizontal(0, colToCut, originalRows, originalCols), recurseVertical(0, colToCut, originalRows, originalCols));
+				int right = Math.max(recurseHorizontal(startRow, colToCut, originalRows, originalCols), recurseVertical(startRow, colToCut, originalRows, originalCols));
 				System.out.println("right: " + right);
 				int temp = left + right;
 
