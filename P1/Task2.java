@@ -25,10 +25,6 @@ public class Task2 {
 		this.originalRows = rows;
 	}
 
-	int recurseHorizontal(int startRow, int startCol, int endRow, int endCol) {
-		return 0;
-	}
-
 	/**
 	 * Check valid cut by checking if col to cut is within any [x1, x2)
 	 * 	so that this is actly O(nToppings).
@@ -44,7 +40,7 @@ public class Task2 {
 			// if colToCut == x1[i], cut is on left border of topping
 			// if colToCut == x2[i], cut is on the right border of topping
 			if (x1[i] < colToCut && colToCut < x2[i]) {
-				System.out.println("col " + colToCut + " cannot be cut");
+//				System.out.println("col " + colToCut + " cannot be cut");
 				return false;
 			}
 
@@ -52,10 +48,10 @@ public class Task2 {
 				// checking if current topping is on left or right of the cut
 				if (startCol <= x1[i] && x2[i] <= colToCut) { // check if topping is on left slice
 					leftHasTopping = true;
-					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on left");
+//					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on left");
 				} else if (colToCut <= x1[i] && x2[i] <= endCol) { // check if topping is on right slice
 					rightHasTopping = true;
-					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on right");
+//					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on right");
 				}
 
 				// However, even if this is true, cut can be invalid if cut thru toppings in future loops,
@@ -68,6 +64,62 @@ public class Task2 {
 		return hasTopping;
 	}
 
+	boolean horizontalCut(int rowToCut, int startRow, int startCol, int endRow, int endCol) {
+		boolean hasTopping = false;
+		boolean topHasTopping = false;
+		boolean bottomHasTopping = false;
+
+		for (int i = 0; i < nToppings; i++) { // O(n)
+			// if rowToCut == y1[i], cut is above topping
+			// if rowToCut == y2[i], cut is below topping
+			if (y1[i] < rowToCut && rowToCut < y2[i]) {
+//				System.out.println("row " + rowToCut + " cannot be cut");
+				return false;
+			}
+
+			if (!hasTopping) {
+				// checking if current topping is on left or right of the cut
+				if (startRow <= y1[i] && y2[i] <= rowToCut) { // check if topping is on left slice
+					topHasTopping = true;
+//					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on left");
+				} else if (rowToCut <= y1[i] && y2[i] <= endRow) { // check if topping is on right slice
+					bottomHasTopping = true;
+//					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on right");
+				}
+
+				// However, even if this is true, cut can be invalid if cut thru toppings in future loops,
+				// so don't return/ break here.
+				hasTopping = topHasTopping && bottomHasTopping;
+			}
+
+		}
+
+		return hasTopping;
+	}
+
+	int recurseHorizontal(int startRow, int startCol, int endRow, int endCol) {
+		// row = 1 is the row between (0, 0) and (1, 0)
+		for (int rowToCut = startRow+1; rowToCut < endRow; rowToCut++) {
+
+			// for every part cake, try slicing every col possible incrementally
+			if (horizontalCut(rowToCut, startRow, startCol, endRow, endCol) == true) {
+
+				// Find max of subcase
+				int top = Math.max(recurseHorizontal(startRow, startCol, rowToCut, endCol), recurseVertical(startRow, startCol, rowToCut, endCol));
+				int bottom = Math.max(recurseHorizontal(rowToCut, startCol, originalRows, endCol), recurseVertical(rowToCut, startCol, originalRows, endCol));
+				int temp = top + bottom;
+
+				return temp;
+			} else {
+				continue;
+//				System.out.println("cannot cut col " + col);
+			}
+		}
+
+		// when startRow == endRow - 1
+		return 1;
+	}
+
 	int recurseVertical(int startRow, int startCol, int endRow, int endCol) {
 		// col = 1 is the column between (0, 0) and (0, 1)
 		for (int colToCut = startCol+1; colToCut < endCol; colToCut++) {
@@ -76,10 +128,10 @@ public class Task2 {
 			if (verticalCut(colToCut, startRow, startCol, endRow, endCol) == true) {
 
 				// Find max of subcase
-				int left = Math.max(recurseHorizontal(startRow, startCol, originalRows, colToCut), recurseVertical(startRow, startCol, originalRows, colToCut));
-				System.out.println("left: " + left);
-				int right = Math.max(recurseHorizontal(startRow, colToCut, originalRows, originalCols), recurseVertical(startRow, colToCut, originalRows, originalCols));
-				System.out.println("right: " + right);
+				int left = Math.max(recurseHorizontal(startRow, startCol, endRow, colToCut), recurseVertical(startRow, startCol, endRow, colToCut));
+//				System.out.println("left: " + left);
+				int right = Math.max(recurseHorizontal(startRow, colToCut, endRow, endCol), recurseVertical(startRow, colToCut, endRow, endCol));
+//				System.out.println("right: " + right);
 				int temp = left + right;
 
 				return temp;
@@ -95,29 +147,6 @@ public class Task2 {
 
 	static int solve(Task2 task2) {
 		return Math.max(task2.recurseHorizontal(0, 0, originalRows, originalCols), task2.recurseVertical(0, 0, originalRows, originalCols));
-
-//		// col = 1 is the column between (0, 0) and (0, 1)
-//		for (int col = 1; col < originalCols; col++) {
-//			if (task2.verticalCut(col, 0, 0, originalRows, originalCols) == true) {
-//				// only do vertical cut for those to right of col cut;
-//				// those to left alr checked vertically.
-//				temp = task2.recurseHorizontal(0, 0, originalRows, col) + task2.recurseVertical(0, col, originalRows, originalCols);
-////				System.out.println("can cut col " + col);
-//			} else {
-////				System.out.println("cannot cut col " + col);
-//			}
-//
-//			maxPieces = Math.max(maxPieces, temp);
-//		}
-
-		// 2. Horizontal attempt
-//		for (int row = 1; row < rows; row++) { // start cutting from row 1
-//			if (horizontalCut(Task2) == true) {
-//				temp = task2.recursiveSolve(task2);
-//			}
-//
-//			maxPieces = Math.max(maxPieces, temp);
-//		}
 	}
 
 	public static void main(String[] args) {
