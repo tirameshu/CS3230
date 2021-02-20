@@ -108,23 +108,19 @@ public class Task2 {
 
 	int recurseHorizontal(int startRow, int startCol, int endRow, int endCol) {
 		// row = 1 is the row between (0, 0) and (1, 0)
-		for (int rowToCut = startRow+1; rowToCut < endRow; rowToCut++) {
+		int rowToCut = (endRow + startRow) / 2;
 
-			// for every part cake, try slicing every col possible incrementally
-			if (horizontalCut(rowToCut, startRow, startCol, endRow, endCol) == true) {
+		// for every part cake, try slicing every col possible incrementally
+		if (horizontalCut(rowToCut, startRow, startCol, endRow, endCol) == true) {
 
-				// Find max of subcase
-				int top = Math.max(recurseHorizontal(startRow, startCol, rowToCut, endCol), recurseVertical(startRow, startCol, rowToCut, endCol));
+			// Find max of subcase
+			int top = Math.max(recurseHorizontal(startRow, startCol, rowToCut, endCol), recurseVertical(startRow, startCol, rowToCut, endCol));
 //				System.out.println("top: " + top);
-				int bottom = Math.max(recurseHorizontal(rowToCut, startCol, endRow, endCol), recurseVertical(rowToCut, startCol, endRow, endCol));
+			int bottom = Math.max(recurseHorizontal(rowToCut, startCol, endRow, endCol), recurseVertical(rowToCut, startCol, endRow, endCol));
 //				System.out.println("bottom: " + bottom);
-				int temp = top + bottom;
+			int temp = top + bottom;
 
-				return temp;
-			} else {
-//				System.out.println("cannot cut row " + rowToCut);
-				continue;
-			}
+			return temp;
 		}
 
 		// when startRow == endRow - 1
@@ -133,23 +129,19 @@ public class Task2 {
 
 	int recurseVertical(int startRow, int startCol, int endRow, int endCol) {
 		// col = 1 is the column between (0, 0) and (0, 1)
-		for (int colToCut = startCol+1; colToCut < endCol; colToCut++) {
+		int colToCut = (endCol + startCol) / 2;
 
-			// for every part cake, try slicing every col possible incrementally
-			if (verticalCut(colToCut, startRow, startCol, endRow, endCol) == true) {
+		// for every part cake, try slicing every col possible incrementally
+		if (verticalCut(colToCut, startRow, startCol, endRow, endCol) == true) {
 
-				// Find max of subcase
-				int left = Math.max(recurseHorizontal(startRow, startCol, endRow, colToCut), recurseVertical(startRow, startCol, endRow, colToCut));
+			// Find max of subcase
+			int left = Math.max(recurseHorizontal(startRow, startCol, endRow, colToCut), recurseVertical(startRow, startCol, endRow, colToCut));
 //				System.out.println("left: " + left);
-				int right = Math.max(recurseHorizontal(startRow, colToCut, endRow, endCol), recurseVertical(startRow, colToCut, endRow, endCol));
+			int right = Math.max(recurseHorizontal(startRow, colToCut, endRow, endCol), recurseVertical(startRow, colToCut, endRow, endCol));
 //				System.out.println("right: " + right);
-				int temp = left + right;
+			int temp = left + right;
 
-				return temp;
-			} else {
-//				System.out.println("cannot cut col " + colToCut);
-				continue;
-			}
+			return temp;
 		}
 
 		// when startCol == endCol - 1
