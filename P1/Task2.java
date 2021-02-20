@@ -36,7 +36,12 @@ public class Task2 {
 		boolean leftHasTopping = false;
 		boolean rightHasTopping = false;
 
+//		System.out.println("Attempting to cut col " + colToCut);
+
 		for (int i = 0; i < nToppings; i++) { // O(n)
+			if (y2[i] <= startRow || y1[i] >= endRow) {
+				continue; // only check for toppings in range!!!!
+			}
 			// if colToCut == x1[i], cut is on left border of topping
 			// if colToCut == x2[i], cut is on the right border of topping
 			if (x1[i] < colToCut && colToCut < x2[i]) {
@@ -48,10 +53,10 @@ public class Task2 {
 				// checking if current topping is on left or right of the cut
 				if (startCol <= x1[i] && x2[i] <= colToCut) { // check if topping is on left slice
 					leftHasTopping = true;
-//					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on left");
+//					System.out.println("Topping " + (i+1) + " [" + x1[i] + ", " + x2[i] + ") on left");
 				} else if (colToCut <= x1[i] && x2[i] <= endCol) { // check if topping is on right slice
 					rightHasTopping = true;
-//					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on right");
+//					System.out.println("Topping " + (i+1) + " [" + x1[i] + ", " + x2[i] + ") on right");
 				}
 
 				// However, even if this is true, cut can be invalid if cut thru toppings in future loops,
@@ -69,22 +74,26 @@ public class Task2 {
 		boolean topHasTopping = false;
 		boolean bottomHasTopping = false;
 
+//		System.out.println("Attempting to cut row " + rowToCut);
+
 		for (int i = 0; i < nToppings; i++) { // O(n)
+			if (x2[i] <= startCol || x1[i] >= endCol) {
+				continue; // only check for toppings in range!!!!
+			}
 			// if rowToCut == y1[i], cut is above topping
 			// if rowToCut == y2[i], cut is below topping
 			if (y1[i] < rowToCut && rowToCut < y2[i]) {
-//				System.out.println("row " + rowToCut + " cannot be cut");
 				return false;
 			}
 
 			if (!hasTopping) {
 				// checking if current topping is on left or right of the cut
-				if (startRow <= y1[i] && y2[i] <= rowToCut) { // check if topping is on left slice
+				if (startRow <= y1[i] && y2[i] <= rowToCut) { // check if topping is above slice
 					topHasTopping = true;
-//					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on left");
-				} else if (rowToCut <= y1[i] && y2[i] <= endRow) { // check if topping is on right slice
+//					System.out.println("Topping " + (i+1) + " [" + y1[i] + ", " + y2[i] + ") on top");
+				} else if (rowToCut <= y1[i] && y2[i] <= endRow) { // check if topping is below slice
 					bottomHasTopping = true;
-//					System.out.println("Topping " + i + " [" + x1[i] + ", " + x2[i] + ") on right");
+//					System.out.println("Topping " + (i+1) + " [" + y1[i] + ", " + y2[i] + ") below");
 				}
 
 				// However, even if this is true, cut can be invalid if cut thru toppings in future loops,
@@ -106,13 +115,15 @@ public class Task2 {
 
 				// Find max of subcase
 				int top = Math.max(recurseHorizontal(startRow, startCol, rowToCut, endCol), recurseVertical(startRow, startCol, rowToCut, endCol));
-				int bottom = Math.max(recurseHorizontal(rowToCut, startCol, originalRows, endCol), recurseVertical(rowToCut, startCol, originalRows, endCol));
+//				System.out.println("top: " + top);
+				int bottom = Math.max(recurseHorizontal(rowToCut, startCol, endRow, endCol), recurseVertical(rowToCut, startCol, endRow, endCol));
+//				System.out.println("bottom: " + bottom);
 				int temp = top + bottom;
 
 				return temp;
 			} else {
+//				System.out.println("cannot cut row " + rowToCut);
 				continue;
-//				System.out.println("cannot cut col " + col);
 			}
 		}
 
@@ -136,12 +147,14 @@ public class Task2 {
 
 				return temp;
 			} else {
+//				System.out.println("cannot cut col " + colToCut);
 				continue;
-//				System.out.println("cannot cut col " + col);
 			}
 		}
 
 		// when startCol == endCol - 1
+//		System.out.println("No col can be cut for range (" + startRow + ", " + startCol +"); ("
+//				+ endRow + ", " + endCol + ")");
 		return 1;
 	}
 
