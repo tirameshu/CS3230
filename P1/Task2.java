@@ -12,11 +12,11 @@ import java.util.Scanner;
  */
 
 public class Task2 {
-	public static int nToppings, originalCols, originalRows;
+	public static int n, originalCols, originalRows;
 	public static int[] x1, x2, y1, y2;
 
-	public Task2(int nToppings, int[] x1, int[] y1, int[] x2, int[] y2, int cols, int rows) {
-		this.nToppings = nToppings;
+	public Task2(int n, int[] x1, int[] y1, int[] x2, int[] y2, int cols, int rows) {
+		this.n = n;
 		this.x1 = x1;
 		this.y1 = y1;
 		this.x2 = x2;
@@ -27,7 +27,7 @@ public class Task2 {
 
 	/**
 	 * Check valid cut by checking if col to cut is within any [x1, x2)
-	 * 	so that this is actly O(nToppings).
+	 * 	so that this is actly O(n).
 	 * As this will be used recursively, boundary rows and columns will change.
 	 * Also check validity by ensuring each piece has topping.
 	 */
@@ -38,14 +38,14 @@ public class Task2 {
 
 //		System.out.println("Attempting to cut col " + colToCut);
 
-		for (int i = 0; i < nToppings; i++) { // O(n)
+		for (int i = 0; i < n; i++) { // O(n)
 			if (y2[i] <= startRow || y1[i] >= endRow) {
 				continue; // only check for toppings in range!!!!
 			}
 			// if colToCut == x1[i], cut is on left border of topping
 			// if colToCut == x2[i], cut is on the right border of topping
 			if (x1[i] < colToCut && colToCut < x2[i]) {
-//				System.out.println("col " + colToCut + " cannot be cut");
+//				System.out.println("Cutting through topping on col " + colToCut + "!");
 				return false;
 			}
 
@@ -76,8 +76,9 @@ public class Task2 {
 
 //		System.out.println("Attempting to cut row " + rowToCut);
 
-		for (int i = 0; i < nToppings; i++) { // O(n)
+		for (int i = 0; i < n; i++) { // O(n)
 			if (x2[i] <= startCol || x1[i] >= endCol) {
+//				System.out.println("Cutting through topping on row " + rowToCut + "!");
 				continue; // only check for toppings in range!!!!
 			}
 			// if rowToCut == y1[i], cut is above topping
@@ -106,110 +107,57 @@ public class Task2 {
 		return hasTopping;
 	}
 
-	// keeps trying to cut horizontally until valid
-	// only when there is one row left then cut vertically
-	int recurseHorizontal(int startRow, int startCol, int endRow, int endCol) {
-		// base case
-		if (startRow == endRow - 1) {
-			if (startCol == endCol - 1) {
-				return 1;
-			}
-			return recurseVertical(startRow, startCol, endRow, endCol); // one row left, cut vertically
-		}
-
-		// normal case
-
-		// row = 1 is the row between (0, 0) and (1, 0)
-		int rowToCut = startRow;
-
-		while (horizontalCut(rowToCut, startRow, startCol, endRow, endCol) == false && rowToCut < endRow) { // must find one row to cut
-			rowToCut++;
-			// everything before this can only be cut vertically
-		}
-
-		if (rowToCut == endRow) {
-			// cannot cut horizontally at all
-			// cut whole thing vertically instead
-			if (startCol == endCol - 1) {
-				return 1; // 1 col only and cannot cut horizontally
-			}
-			return recurseVertical(startRow, startCol, endRow, endCol);
-		}
-
-//		System.out.println("Cutting row " + rowToCut);
-
-		// Sum the subcases
-		int top = recurseVertical(startRow, startCol, rowToCut, endCol);
-//			System.out.println("top: " + top);
-		int bottom = recurseHorizontal(rowToCut, startCol, endRow, endCol);
-//			System.out.println("bottom: " + bottom);
-		int temp = top + bottom;
-
-		return temp;
-	}
-
-	int recurseVertical(int startRow, int startCol, int endRow, int endCol) {
-		// base case
-		if (startCol == endCol - 1) {
-			if (startRow == endRow - 1) {
-				return 1;
-			}
-			return recurseHorizontal(startRow, startCol, endRow, endCol);
-		}
-
-		// normal case: multiple cols
-
-		// col = 1 is the column between (0, 0) and (0, 1)
-		int colToCut = startCol;
-
-		while (verticalCut(colToCut, startRow, startCol, endRow, endCol) == false && colToCut < endCol) { // must find one col to cut
-			colToCut++;
-			// everything before this can only be cut horizontally
-		}
-
-		if (colToCut == endCol) {
-			// cannot cut vertically at all
+	/**
+	 * for each block of cake (can contain multiple toppings):
+	 * 		for each topping:
+	 * 			check if topping in range
+	 * 			get the topping's horizontal boundary (row = y2): valid cut along this?
+	 * 				if yes, cut and return solve(resultant pieces)
+	 * 			get the topping's vertical boundary (col = x2): valid cut along this?
+	 * 				if yes, cut and return solve(resultant pieces)
+	 *
+	 * 		return 1: cannot cut along any topping
+	 */
+	int solve(int startRow, int startCol, int endRow, int endCol) {
+		if (startRow == endRow - 1 && startCol == endCol - 1) {
 			return 1;
 		}
+		for (int i = 0; i < n; i++) {
+			int rowToCut = y2[i]; // horizontal boundary of a topping
+			if (horizontalCut(rowToCut, startRow, startCol, endRow, endCol)) { // can cut along this row
+//				System.out.println("Can cut through row " + rowToCut);
+				return solve(startRow, startCol, rowToCut, endCol) + solve(rowToCut, startCol, endRow, endCol);
+			}
 
-		// Sum the subcases
+			int colToCut = x2[i]; // vertical boundary of a topping
+			if (verticalCut(colToCut, startRow, startCol, endRow, endCol)) { // can cut along this col
+//				System.out.println("Can cut through col " + colToCut);
+				return solve(startRow, startCol, endRow, colToCut) + solve(startRow, colToCut, endRow, endCol);
+			}
+		}
 
-//		System.out.println("Cutting col " + colToCut);
-
-		// everything on left cannot be cut vertically
-		// but this subcase can possibly be horizontally cut
-		int left = recurseHorizontal(startRow, startCol, endRow, colToCut);
-//		System.out.println("left: " + left);
-		int right = recurseVertical(startRow, colToCut, endRow, endCol);
-//		System.out.println("right: " + right);
-		int temp = left + right;
-
-		return temp;
-	}
-
-	static int solve(Task2 task2) {
-		return task2.recurseHorizontal(0, 0, originalRows, originalCols);
+		return 1;
 	}
 
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 		int cols = sc.nextInt();
 		int rows = sc.nextInt();
-		int nToppings = sc.nextInt();
-		int x1[] = new int[nToppings];
-		int y1[] = new int[nToppings];
-		int x2[] = new int[nToppings];
-		int y2[] = new int[nToppings];
+		int n = sc.nextInt();
+		int x1[] = new int[n];
+		int y1[] = new int[n];
+		int x2[] = new int[n];
+		int y2[] = new int[n];
 
-		for(int i=0; i<nToppings; i++) {
+		for(int i=0; i<n; i++) {
 			x1[i] = sc.nextInt();
 			y1[i] = sc.nextInt();
 			x2[i] = sc.nextInt();
 			y2[i] = sc.nextInt();
 		}
 
-		Task2 task2 = new Task2(nToppings, x1, y1, x2, y2, cols, rows);
+		Task2 task2 = new Task2(n, x1, y1, x2, y2, cols, rows);
 
-		System.out.println(solve(task2));
+		System.out.println(task2.solve(0, 0, rows, cols));
 	}
 }
