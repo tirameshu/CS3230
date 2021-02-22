@@ -106,52 +106,89 @@ public class Task2 {
 		return hasTopping;
 	}
 
+	// keeps trying to cut horizontally until valid
+	// only when there is one row left then cut vertically
 	int recurseHorizontal(int startRow, int startCol, int endRow, int endCol) {
-		// row = 1 is the row between (0, 0) and (1, 0)
-		int rowToCut = (endRow + startRow) / 2;
-
-		// for every part cake, try slicing every col possible incrementally
-		if (horizontalCut(rowToCut, startRow, startCol, endRow, endCol) == true) {
-
-			// Find max of subcase
-			int top = Math.max(recurseHorizontal(startRow, startCol, rowToCut, endCol), recurseVertical(startRow, startCol, rowToCut, endCol));
-//				System.out.println("top: " + top);
-			int bottom = Math.max(recurseHorizontal(rowToCut, startCol, endRow, endCol), recurseVertical(rowToCut, startCol, endRow, endCol));
-//				System.out.println("bottom: " + bottom);
-			int temp = top + bottom;
-
-			return temp;
+		// base case
+		if (startRow == endRow - 1) {
+			if (startCol == endCol - 1) {
+				return 1;
+			}
+			return recurseVertical(startRow, startCol, endRow, endCol); // one row left, cut vertically
 		}
 
-		// when startRow == endRow - 1
-		return 1;
+		// normal case
+
+		// row = 1 is the row between (0, 0) and (1, 0)
+		int rowToCut = startRow;
+
+		while (horizontalCut(rowToCut, startRow, startCol, endRow, endCol) == false && rowToCut < endRow) { // must find one row to cut
+			rowToCut++;
+			// everything before this can only be cut vertically
+		}
+
+		if (rowToCut == endRow) {
+			// cannot cut horizontally at all
+			// cut whole thing vertically instead
+			if (startCol == endCol - 1) {
+				return 1; // 1 col only and cannot cut horizontally
+			}
+			return recurseVertical(startRow, startCol, endRow, endCol);
+		}
+
+//		System.out.println("Cutting row " + rowToCut);
+
+		// Sum the subcases
+		int top = recurseVertical(startRow, startCol, rowToCut, endCol);
+//			System.out.println("top: " + top);
+		int bottom = recurseHorizontal(rowToCut, startCol, endRow, endCol);
+//			System.out.println("bottom: " + bottom);
+		int temp = top + bottom;
+
+		return temp;
 	}
 
 	int recurseVertical(int startRow, int startCol, int endRow, int endCol) {
-		// col = 1 is the column between (0, 0) and (0, 1)
-		int colToCut = (endCol + startCol) / 2;
-
-		// for every part cake, try slicing every col possible incrementally
-		if (verticalCut(colToCut, startRow, startCol, endRow, endCol) == true) {
-
-			// Find max of subcase
-			int left = Math.max(recurseHorizontal(startRow, startCol, endRow, colToCut), recurseVertical(startRow, startCol, endRow, colToCut));
-//				System.out.println("left: " + left);
-			int right = Math.max(recurseHorizontal(startRow, colToCut, endRow, endCol), recurseVertical(startRow, colToCut, endRow, endCol));
-//				System.out.println("right: " + right);
-			int temp = left + right;
-
-			return temp;
+		// base case
+		if (startCol == endCol - 1) {
+			if (startRow == endRow - 1) {
+				return 1;
+			}
+			return recurseHorizontal(startRow, startCol, endRow, endCol);
 		}
 
-		// when startCol == endCol - 1
-//		System.out.println("No col can be cut for range (" + startRow + ", " + startCol +"); ("
-//				+ endRow + ", " + endCol + ")");
-		return 1;
+		// normal case: multiple cols
+
+		// col = 1 is the column between (0, 0) and (0, 1)
+		int colToCut = startCol;
+
+		while (verticalCut(colToCut, startRow, startCol, endRow, endCol) == false && colToCut < endCol) { // must find one col to cut
+			colToCut++;
+			// everything before this can only be cut horizontally
+		}
+
+		if (colToCut == endCol) {
+			// cannot cut vertically at all
+			return 1;
+		}
+
+		// Sum the subcases
+
+//		System.out.println("Cutting col " + colToCut);
+
+		// everything on left cannot be cut vertically
+		// but this subcase can possibly be horizontally cut
+		int left = recurseHorizontal(startRow, startCol, endRow, colToCut);
+//		System.out.println("left: " + left);
+		int right = recurseVertical(startRow, colToCut, endRow, endCol);
+//		System.out.println("right: " + right);
+		int temp = left + right;
+
+		return temp;
 	}
 
 	static int solve(Task2 task2) {
-		return Math.max(task2.recurseHorizontal(0, 0, originalRows, originalCols), task2.recurseVertical(0, 0, originalRows, originalCols));
+		return task2.recurseHorizontal(0, 0, originalRows, originalCols);
 	}
 
 	public static void main(String[] args) {
