@@ -35,19 +35,26 @@ class Main {
 		long answer = 0;
 
 		HashMap<Integer, Integer> mapAToB = new HashMap<>();
-		HashMap<Integer, Integer> valToIndex = new HashMap<>();
-		boolean[] valObtained = new boolean[N]; // default false
+		HashMap<Integer, Integer> valToAvail = new HashMap<>(); // value -> no. of available items w this val
 
 		// map for a_i to b_i
 		for (int i = 0; i < N; i++) {
 			mapAToB.put(a[i], b[i]); // a[i] distinct
-			valToIndex.put(b[i], i);
+			if (valToAvail.containsKey(b[i])) {
+				int num = valToAvail.get(b[i]);
+				num += 1;
+				valToAvail.replace(b[i], num);
+			} else {
+				valToAvail.put(b[i], 1);
+			}
 		}
 
 		// sort a by value of item to A
 		Arrays.sort(a);
 
 		for (int i = 1; i <= N/2; i++) {
+
+			System.out.printf("==== At iteration %d ====\n", i);
 
 			// 1-base because len(prefix(i)) starts at 1
 			int lowerI = i;
@@ -67,16 +74,21 @@ class Main {
 			int toAdd = 0;
 
 			for (int opA: options) {
+				System.out.printf("option: %d\n", opA);
 				int valB = mapAToB.get(opA);
 				// alr in desc order of value to B
-				int index = valToIndex.get(valB);
-				if (!valObtained[index]) {
+				boolean avail = valToAvail.get(valB) > 0;
+				if (avail) {
 					// not yet obtained
 					toAdd = valB;
-					valObtained[index] = true;
+					int remaining = valToAvail.get(valB);
+					remaining -= 1;
+					valToAvail.replace(valB, remaining);
 					break;
 				}
 			}
+
+			System.out.printf("To add: %d\n", toAdd);
 
 			answer += toAdd;
 		}
