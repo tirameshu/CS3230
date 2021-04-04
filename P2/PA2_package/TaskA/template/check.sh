@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+echo "Compiling Main.java"
 javac Main.java
 
 for i in {1..8};

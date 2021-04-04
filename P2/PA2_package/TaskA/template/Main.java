@@ -54,7 +54,7 @@ class Main {
 
 		for (int i = 1; i <= N/2; i++) {
 
-			System.out.printf("==== At iteration %d ====\n", i);
+//			System.out.printf("==== At iteration %d ====\n", i);
 
 			// 1-base because len(prefix(i)) starts at 1
 			int lowerI = i;
@@ -62,20 +62,17 @@ class Main {
 
 			// get subarray [i, i+i] of a, exclusive of upperI
 			// change to 0-base
-			Integer[] options = Arrays.copyOfRange(a, lowerI-1, upperI-1); // O(N)
+			Integer[] options = Arrays.copyOfRange(a, 0, upperI-1); // O(N)
 
 			// sort options in desc order of value to B
-			Arrays.sort(options, new Comparator<Integer>() {
-				public int compare(Integer a1, Integer a2) {
-					return mapAToB.get(a2) - mapAToB.get(a1);
-				}
-			});
+			Arrays.sort(options, (a1, a2) -> mapAToB.get(a2) - mapAToB.get(a1));
 
 			int toAdd = 0;
 
 			for (int opA: options) {
-				System.out.printf("option: %d\n", opA);
 				int valB = mapAToB.get(opA);
+//				System.out.printf("option: %d, valB: %d\n", opA, valB);
+
 				// alr in desc order of value to B
 				boolean avail = valToAvail.get(valB) > 0;
 				if (avail) {
@@ -88,7 +85,7 @@ class Main {
 				}
 			}
 
-			System.out.printf("To add: %d\n", toAdd);
+//			System.out.printf("To add: %d\n", toAdd);
 
 			answer += toAdd;
 		}
